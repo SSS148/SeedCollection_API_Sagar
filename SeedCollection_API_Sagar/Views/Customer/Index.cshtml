@@ -1,0 +1,197 @@
+﻿
+@{
+    ViewData["Title"] = "Index";
+}
+
+<script src="~/lib/jquery/dist/jquery.js"></script>
+
+<div class="row">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Customer</h2>
+
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+                <br />
+                <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left">
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                            Customer Name <span class="required">*</span>
+                        </label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input type="text" id="CustomerName" required="required" class="form-control col-md-7 col-xs-12" name="CustomerName">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12" for="last-name">
+                            Phone Number <span class="required">*</span>
+                        </label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input type="text" id="PhoneNumber" name="PhoneNumber" required="required" class="form-control col-md-7 col-xs-12">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                            Address <span class="required">*</span>
+                        </label>
+                        <div class="col-md-6 col-sm-6 col-xs-12">
+                            <input type="text" id="Address" name="Address" required="required" class="form-control col-md-7 col-xs-12">
+                        </div>
+                    </div>
+                    <div class="ln_solid"></div>
+                    <input type="hidden" id="ID" name="ID" />
+                    <div class="form-group">
+                        <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                            <button type="submit" class="btn btn-success" id="btn1">Submit</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clearfix"></div>
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Customer List</h2>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <div class="table-responsive">
+                <table class="table table-striped jambo_table bulk_action" id="tab1">
+                    <tr class="headings">
+                        <th class="column-title" width="180px"># </th>
+                        <th class="column-title" width="180px">Name </th>
+                        <th class="column-title" width="180px">Phone Number </th>
+                        <th class="column-title" width="230px">Address </th>
+                        <th class="column-title no-link last" width="240px">
+                            <span class="nobr">Action</span>
+                        </th>
+                    </tr>
+
+
+
+
+                </table>
+            </div>
+
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function AddEditRecord(id, custName, phone, address) {
+        $("#CustomerName").val(custName);
+        $("#PhoneNumber").val(phone);
+        $("#Address").val(address);
+        $("#ID").val(id);
+    }
+
+    function UpdateRecord() {
+        $.ajax({
+            type: "put",
+            contentType: "application/json;charset=utf-8",
+            url: "/api/Customers/" + $("#ID").val(),
+            data: JSON.stringify({
+                ID: parseInt($("#ID").val()),
+                CustomerName: $("#CustomerName").val(),
+                PhoneNumber: $("#PhoneNumber").val(),
+                Address: $("#Address").val(),
+            }),
+
+            dataType: "JSON",
+
+            success: function (data) {
+                $("#tab1").find("tr:gt(0)").remove();
+                $.getJSON("/api/infoes/", function (data) {
+                    $("#tab1").css("display", "block");
+                    $.each(data, function (key, val) {
+                        $("<tr class='even pointer'><td width='180px'>" + val.id + "</td><td width='180px'>" + val.customerName + "</td><td width='180px'>" + val.phoneNumber + "</td><td width='230px'>" + val.address + "</td><td width='240px'>" + "<button class='btn btn-warning btn-xs' onclick='AddEditRecord(" + val.id + ',"' + val.customerName + '","' + val.phoneNumber + '","' + val.address + '"' + ");'" + ">Edit</button><button class='btn btn-danger btn-xs' onclick='DeleteRecord(" + val.id + ");'" + ">Delete</button>" + "</td></tr>").appendTo($("#tab1"));
+
+                    })
+
+                })
+
+            }
+        });
+    }
+    //Delete
+    function DeleteRecord(ID) {
+        $.ajax({
+
+            type: "DELETE",
+
+            contentType: "application/json;charset=utf-8",
+
+            url: "/api/Customers/" + ID,
+
+            data: JSON.stringify({
+                id: ID,
+            }),
+            dataType: "JSON",
+            success: function (data) {
+                $("#tab1").find("tr:gt(0)").remove();
+                $.getJSON("/api/Customers/", function (data) {
+                    $("#tab1").css("display", "block");
+                    $.each(data, function (key, val) {
+                        $("<tr class='even pointer'><td width='180px'>" + val.id + "</td><td width='180px'>" + val.customerName + "</td><td width='180px'>" + val.phoneNumber + "</td><td width='230px'>" + val.address + "</td><td width='240px'>" + "<button class='btn btn-warning btn-xs' onclick='AddEditRecord(" + val.id + ',"' + val.customerName + '","' + val.phoneNumber + '","' + val.address + '"' + ");'" + ">Edit</button><button class='btn btn-danger btn-xs' onclick='DeleteRecord(" + val.id + ");'" + ">Delete</button>" + "</td></tr>").appendTo($("#tab1"));
+
+                    })
+
+                })
+            }
+        });
+    }
+    $(document).ready(function () {
+        $("#tab1").css("display", "none");
+        $.getJSON("/api/Customers/", function (data) {
+            $("#tab1").css("display", "block");
+            $.each(data, function (key, val) {
+                $("<tr class='even pointer'><td width='180px'>" + val.id + "</td><td width='180px'>" + val.customerName + "</td><td width='180px'>" + val.phoneNumber + "</td><td width='230px'>" + val.address + "</td><td width='240px'>" + "<button class='btn btn-warning btn-xs' onclick='AddEditRecord(" + val.id + ',"' + val.customerName + '","' + val.phoneNumber + '","' + val.address + '"' + ");'" + ">Edit</button><button class='btn btn-danger btn-xs' onclick='DeleteRecord(" + val.id + ");'" + ">Delete</button>" + "</td></tr>").appendTo($("#tab1"));
+            });
+        })
+
+        //POST
+        $("#btn1").click(function () {
+            if ($("#ID").val() > 0) {
+                UpdateRecord();
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    contentType: "application/json;charset=utf-8",
+                    url: "/api/Customers/",
+                    data: JSON.stringify({
+                        CustomerName: $("#CustomerName").val(),
+                        PhoneNumber: $("#PhoneNumber").val(),
+                        Address: $("#Address").val()
+                    }),
+                    dataType: "JSON",
+                    success: function (data) {
+                        $("#ID").val('');
+                        $("#tab1").find("tr:gt(0)").remove();
+                        $.getJSON("/api/Customers/", function (data) {
+                            $("#tab1").css("display", "block");
+                            $.each(data, function (key, val) {
+                                $("<tr class='even pointer'><td width='180px'>" + val.id + "</td><td width='180px'>" + val.customerName + "</td><td width='180px'>" + val.phoneNumber + "</td><td width='230px'>" + val.address + "</td><td width='240px'>" + "<button class='btn btn-warning btn-xs' onclick='AddEditRecord(" + val.id + ',"' + val.customerName + '","' + val.phoneNumber + '","' + val.address + '"' + ");'" + ">Edit</button><button class='btn btn-danger btn-xs' onclick='DeleteRecord(" + val.id + ");'" + ">Delete</button>" + "</td></tr>").appendTo($("#tab1"));
+
+                            })
+
+                        })
+
+
+
+                    }
+                });
+            }
+
+        })
+    });
+
+</script>
+
